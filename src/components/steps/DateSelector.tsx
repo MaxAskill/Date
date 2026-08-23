@@ -92,9 +92,34 @@ export function DateSelector({ selected, onSelect }: Props) {
 
       <div className="mt-6">
         {!customMode ? (
-          <Button variant="ghost" onClick={() => setCustomMode(true)}>
-            <span aria-hidden>📅</span> Suggest another date
-          </Button>
+          <div className="space-y-3">
+            {selected?.id.startsWith("custom-") && (
+              <Card className="border-rose-500 bg-rose-900 p-4 text-cream-50 shadow-soft">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-cream-100/65">
+                  Custom date selected
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-display text-2xl leading-tight">
+                      {selected.label}
+                    </div>
+                    <div className="mt-1 text-sm text-cream-100/80">
+                      {formatDateShort(selected.date)}
+                    </div>
+                  </div>
+                  <span className="text-2xl" aria-hidden>
+                    ✓
+                  </span>
+                </div>
+              </Card>
+            )}
+            <Button variant="ghost" onClick={() => setCustomMode(true)}>
+              <span aria-hidden>📅</span>{" "}
+              {selected?.id.startsWith("custom-")
+                ? "Change custom date"
+                : "Suggest another date"}
+            </Button>
+          </div>
         ) : (
           <Card className="p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">

@@ -76,9 +76,29 @@ export function TimeSelector({ selected, onSelect }: Props) {
 
       <div className="mt-6">
         {!customMode ? (
-          <Button variant="ghost" onClick={() => setCustomMode(true)}>
-            <span aria-hidden>🕒</span> Suggest another time
-          </Button>
+          <div className="space-y-3">
+            {selected?.id.startsWith("custom-") && (
+              <Card className="border-rose-500 bg-rose-900 p-4 text-cream-50 shadow-soft">
+                <div className="text-[10px] uppercase tracking-[0.22em] text-cream-100/65">
+                  Custom time selected
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <div className="font-mono text-4xl font-bold tracking-[0.08em]">
+                    {selected.label}
+                  </div>
+                  <span className="text-2xl" aria-hidden>
+                    ✓
+                  </span>
+                </div>
+              </Card>
+            )}
+            <Button variant="ghost" onClick={() => setCustomMode(true)}>
+              <span aria-hidden>🕒</span>{" "}
+              {selected?.id.startsWith("custom-")
+                ? "Change custom time"
+                : "Suggest another time"}
+            </Button>
+          </div>
         ) : (
           <Card className="p-4 sm:p-5">
             <label
