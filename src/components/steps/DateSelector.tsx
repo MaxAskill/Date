@@ -17,40 +17,23 @@ type Props = {
 
 export function DateSelector({ selected, onSelect }: Props) {
   const [customMode, setCustomMode] = useState(false);
-  const [customValue, setCustomValue] = useState("");
-  const [customError, setCustomError] = useState("");
+  const [viewDate, setViewDate] = useState(() => {
+    const date = new Date();
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  });
 
   const suggested = getSuggestedDates();
 
-  const handleCustomSubmit = () => {
-    setCustomError("");
-    if (!customValue) return;
-    const [y, m, d] = customValue.split("-").map(Number);
-    if (!y || !m || !d) {
-      setCustomError("Use YYYY-MM-DD, like 2026-09-05.");
-      return;
-    }
-    const date = new Date(y, m - 1, d);
-    if (
-      date.getFullYear() !== y ||
-      date.getMonth() !== m - 1 ||
-      date.getDate() !== d
-    ) {
-      setCustomError("That date does not look valid.");
-      return;
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) {
-      setCustomError("Pick today or a future date.");
-      return;
-    }
+  const selectCustomDate = (date: Date) => {
+    const iso = toLocalIsoDate(date);
     const label = date.toLocaleDateString("en-US", { weekday: "long" });
     onSelect({
-      id: `custom-${customValue}`,
+      id: `custom-${iso}`,
       label,
-      date: customValue,
-      helper: formatDateShort(customValue),
+      date: iso,
+      helper: formatDateShort(iso),
     });
     setCustomMode(false);
   };
@@ -114,48 +97,135 @@ export function DateSelector({ selected, onSelect }: Props) {
           </Button>
         ) : (
           <Card className="p-4 sm:p-5">
-            <label
-              htmlFor="custom-date"
-              className="block text-sm font-medium text-rose-900 mb-2"
-            >
-              Pick a date
-            </label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                id="custom-date"
-                type="text"
-                inputMode="numeric"
-                value={customValue}
-                onChange={(e) => {
-                  setCustomValue(e.target.value);
-                  setCustomError("");
-                }}
-                placeholder="YYYY-MM-DD"
-                className="flex-1 rounded-sm border border-rose-200 bg-cream-50 px-4 py-2.5 font-medium tracking-[0.08em] text-rose-900 placeholder:text-rose-800/35 focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-              <Button onClick={handleCustomSubmit} disabled={!customValue}>
-                Use this date
-              </Button>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-rose-700/60">
+                  Pick a date
+                </div>
+                <div className="mt-1 font-display text-2xl text-rose-900">
+                  {viewDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setViewDate(addMonths(viewDate, -1))}
+                  className="grid h-9 w-9 place-items-center rounded-sm border border-rose-200 text-rose-900 hover:bg-rose-100"
+                  aria-label="Previous month"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewDate(addMonths(viewDate, 1))}
+                  className="grid h-9 w-9 place-items-center rounded-sm border border-rose-200 text-rose-900 hover:bg-rose-100"
+                  aria-label="Next month"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+
+            <MiniCalendar viewDate={viewDate} onSelect={selectCustomDate} />
+
+            <div className="mt-4 flex justify-end">
               <Button
                 variant="ghost"
                 onClick={() => {
                   setCustomMode(false);
-                  setCustomValue("");
-                  setCustomError("");
                 }}
               >
                 Cancel
               </Button>
             </div>
-            {customError && (
-              <p className="mt-3 text-sm text-rose-700">{customError}</p>
-            )}
             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
-              Custom date, no default calendar popup
+              Themed calendar, no default browser popup
             </p>
           </Card>
         )}
       </div>
     </div>
   );
+}
+
+function MiniCalendar({
+  viewDate,
+  onSelect,
+}: {
+  viewDate: Date;
+  onSelect: (date: Date) => void;
+}) {
+  const days = buildCalendarDays(viewDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return (
+    <div>
+      <div className="grid grid-cols-7 gap-1 border-b border-rose-200 pb-2">
+        {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+          <div
+            key={`${day}-${idx}`}
+            className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700/60"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 grid grid-cols-7 gap-1">
+        {days.map(({ date, inMonth }) => {
+          const disabled = date < today;
+          const isToday = toLocalIsoDate(date) === toLocalIsoDate(today);
+          return (
+            <button
+              key={toLocalIsoDate(date)}
+              type="button"
+              disabled={disabled}
+              onClick={() => onSelect(date)}
+              className={cn(
+                "aspect-square rounded-sm text-sm font-semibold transition",
+                inMonth ? "text-rose-900" : "text-rose-900/30",
+                isToday && "ring-1 ring-rose-400",
+                disabled
+                  ? "cursor-not-allowed opacity-30"
+                  : "hover:bg-rose-900 hover:text-cream-50",
+              )}
+            >
+              {date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function buildCalendarDays(viewDate: Date): { date: Date; inMonth: boolean }[] {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const first = new Date(year, month, 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+
+  return Array.from({ length: 42 }, (_, idx) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + idx);
+    date.setHours(0, 0, 0, 0);
+    return { date, inMonth: date.getMonth() === month };
+  });
+}
+
+function addMonths(date: Date, amount: number): Date {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + amount);
+  return next;
+}
+
+function toLocalIsoDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
