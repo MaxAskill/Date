@@ -16,14 +16,19 @@ type Props = {
 
 export function TimeSelector({ selected, onSelect }: Props) {
   const [customMode, setCustomMode] = useState(false);
-  const [customValue, setCustomValue] = useState("18:00");
+  const [customHour, setCustomHour] = useState("6");
+  const [customMinute, setCustomMinute] = useState("00");
+  const [customPeriod, setCustomPeriod] = useState<"PM" | "AM">("PM");
 
   const handleCustomSubmit = () => {
-    if (!customValue) return;
-    const [hh, mm] = customValue.split(":").map(Number);
-    if (hh === undefined || mm === undefined) return;
+    const hour = Number(customHour);
+    const minute = Number(customMinute);
+    if (!hour || Number.isNaN(minute)) return;
+    const hh =
+      customPeriod === "PM" ? (hour === 12 ? 12 : hour + 12) : hour === 12 ? 0 : hour;
+    const customValue = `${String(hh).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
     const d = new Date();
-    d.setHours(hh, mm, 0, 0);
+    d.setHours(hh, minute, 0, 0);
     const label = d.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -79,15 +84,29 @@ export function TimeSelector({ selected, onSelect }: Props) {
             >
               Pick a time
             </label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                id="custom-time"
-                type="time"
-                value={customValue}
-                onChange={(e) => setCustomValue(e.target.value)}
-                className="flex-1 rounded-full border border-rose-200 px-4 py-2.5 text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white"
+            <div
+              id="custom-time"
+              className="grid grid-cols-3 gap-2 sm:grid-cols-[1fr_1fr_1fr_auto_auto]"
+            >
+              <SegmentedPicker
+                label="Hour"
+                value={customHour}
+                options={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]}
+                onChange={setCustomHour}
               />
-              <Button onClick={handleCustomSubmit} disabled={!customValue}>
+              <SegmentedPicker
+                label="Minute"
+                value={customMinute}
+                options={["00", "15", "30", "45"]}
+                onChange={setCustomMinute}
+              />
+              <SegmentedPicker
+                label="Period"
+                value={customPeriod}
+                options={["PM", "AM"]}
+                onChange={(value) => setCustomPeriod(value as "PM" | "AM")}
+              />
+              <Button onClick={handleCustomSubmit}>
                 Use this time
               </Button>
               <Button
@@ -99,8 +118,51 @@ export function TimeSelector({ selected, onSelect }: Props) {
                 Cancel
               </Button>
             </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
+              Custom time, no default clock popup
+            </p>
           </Card>
         )}
+      </div>
+    </div>
+  );
+}
+
+function SegmentedPicker({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-rose-700/60">
+        {label}
+      </div>
+      <div className="grid max-h-36 grid-cols-2 gap-1 overflow-y-auto rounded-sm border border-rose-200 bg-cream-50 p-1">
+        {options.map((option) => {
+          const active = value === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className={cn(
+                "rounded-sm px-2 py-1.5 text-sm font-semibold transition",
+                active
+                  ? "bg-rose-900 text-cream-50"
+                  : "text-rose-900 hover:bg-rose-100",
+              )}
+            >
+              {option}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

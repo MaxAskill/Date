@@ -18,15 +18,33 @@ type Props = {
 export function DateSelector({ selected, onSelect }: Props) {
   const [customMode, setCustomMode] = useState(false);
   const [customValue, setCustomValue] = useState("");
+  const [customError, setCustomError] = useState("");
 
   const suggested = getSuggestedDates();
 
   const handleCustomSubmit = () => {
+    setCustomError("");
     if (!customValue) return;
-    // Build a DateOption from the user-picked date
     const [y, m, d] = customValue.split("-").map(Number);
-    if (!y || !m || !d) return;
+    if (!y || !m || !d) {
+      setCustomError("Use YYYY-MM-DD, like 2026-09-05.");
+      return;
+    }
     const date = new Date(y, m - 1, d);
+    if (
+      date.getFullYear() !== y ||
+      date.getMonth() !== m - 1 ||
+      date.getDate() !== d
+    ) {
+      setCustomError("That date does not look valid.");
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      setCustomError("Pick today or a future date.");
+      return;
+    }
     const label = date.toLocaleDateString("en-US", { weekday: "long" });
     onSelect({
       id: `custom-${customValue}`,
@@ -105,11 +123,15 @@ export function DateSelector({ selected, onSelect }: Props) {
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 id="custom-date"
-                type="date"
+                type="text"
+                inputMode="numeric"
                 value={customValue}
-                onChange={(e) => setCustomValue(e.target.value)}
-                className="flex-1 rounded-full border border-rose-200 px-4 py-2.5 text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white"
-                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => {
+                  setCustomValue(e.target.value);
+                  setCustomError("");
+                }}
+                placeholder="YYYY-MM-DD"
+                className="flex-1 rounded-sm border border-rose-200 bg-cream-50 px-4 py-2.5 font-medium tracking-[0.08em] text-rose-900 placeholder:text-rose-800/35 focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
               <Button onClick={handleCustomSubmit} disabled={!customValue}>
                 Use this date
@@ -119,11 +141,18 @@ export function DateSelector({ selected, onSelect }: Props) {
                 onClick={() => {
                   setCustomMode(false);
                   setCustomValue("");
+                  setCustomError("");
                 }}
               >
                 Cancel
               </Button>
             </div>
+            {customError && (
+              <p className="mt-3 text-sm text-rose-700">{customError}</p>
+            )}
+            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
+              Custom date, no default calendar popup
+            </p>
           </Card>
         )}
       </div>
