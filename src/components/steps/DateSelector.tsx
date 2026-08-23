@@ -166,9 +166,9 @@ export function DateSelector({ selected, onSelect }: Props) {
                 Cancel
               </Button>
             </div>
-            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
+            {/* <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
               Themed calendar, no default browser popup
-            </p>
+            </p> */}
           </Card>
         )}
       </div>
