@@ -5,10 +5,10 @@ import { Card } from "@/components/ui/Card";
 export default function HomePage() {
   return (
     <main className="min-h-dvh flex items-center justify-center px-6 py-16 bg-romantic-gradient">
-      <Card className="p-8 sm:p-12 max-w-2xl text-center">
+      <Card className="p-8 sm:p-12 max-w-2xl text-center border-rose-300">
         <span className="text-5xl sm:text-6xl block mb-5" aria-hidden>💌</span>
         <h1 className="font-display text-4xl sm:text-5xl text-rose-900 leading-tight">
-          A little invitation
+          A date invitation
         </h1>
         <p className="mt-4 text-rose-900/75 text-base sm:text-lg leading-relaxed">
           This invitation is made for{" "}

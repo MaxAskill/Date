@@ -16,7 +16,7 @@ export function SectionHeader({
   return (
     <div className="flex flex-col gap-3 mb-6 sm:mb-8">
       {eyebrow && (
-        <span className="text-xs uppercase tracking-[0.18em] text-rose-500 font-medium">
+        <span className="text-xs uppercase tracking-[0.28em] text-rose-500 font-semibold">
           {eyebrow}
         </span>
       )}

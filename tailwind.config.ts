@@ -6,28 +6,28 @@ const config: Config = {
     extend: {
       colors: {
         rose: {
-          50: "#fff5f7",
-          100: "#ffe4ea",
-          200: "#ffc9d4",
-          300: "#ff9eb1",
-          400: "#ff6f8f",
-          500: "#f43f6d",
-          600: "#d92555",
-          700: "#b31b45",
-          800: "#971a40",
-          900: "#801a3d",
+          50: "#fbf6ef",
+          100: "#efe2d1",
+          200: "#d8c2aa",
+          300: "#bd947e",
+          400: "#98645c",
+          500: "#7a253f",
+          600: "#681831",
+          700: "#560d27",
+          800: "#43081d",
+          900: "#340014",
         },
         cream: {
-          50: "#fdfaf6",
-          100: "#f9f1e7",
-          200: "#f1e3cf",
+          50: "#f8f1e8",
+          100: "#ede1d0",
+          200: "#d7c5af",
         },
         lavender: {
-          50: "#f7f4ff",
-          100: "#ede7ff",
-          200: "#d8c9ff",
-          300: "#bba3ff",
-          400: "#9c7bff",
+          50: "#f3f1ec",
+          100: "#ded8cd",
+          200: "#bcb2a3",
+          300: "#9b8e7e",
+          400: "#74665a",
         },
       },
       fontFamily: {
@@ -35,8 +35,8 @@ const config: Config = {
         body: ["var(--font-body)", "sans-serif"],
       },
       boxShadow: {
-        soft: "0 10px 30px -10px rgba(244, 63, 109, 0.18)",
-        card: "0 20px 50px -20px rgba(155, 123, 255, 0.25)",
+        soft: "0 14px 34px -18px rgba(52, 0, 20, 0.45)",
+        card: "0 24px 70px -34px rgba(52, 0, 20, 0.42)",
       },
       keyframes: {
         floatUp: {
@@ -65,7 +65,7 @@ const config: Config = {
       },
       backgroundImage: {
         "romantic-gradient":
-          "radial-gradient(ellipse at top, #ffe4ea 0%, #fff5f7 35%, #f7f4ff 100%)",
+          "radial-gradient(ellipse at top, #d8c2aa 0%, #f8f1e8 38%, #ded8cd 100%)",
       },
     },
   },

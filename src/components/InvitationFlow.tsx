@@ -357,7 +357,7 @@ function Footer({
             : "pointer-events-none translate-y-4 opacity-0"
         }`}
       >
-        <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-2xl border border-rose-100 bg-white/90 p-2 shadow-soft backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-lg border border-rose-200 bg-cream-50/95 p-2 shadow-soft backdrop-blur">
           <Button variant="ghost" onClick={onBack} className="shrink-0">
             ← Back
           </Button>

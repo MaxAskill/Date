@@ -14,20 +14,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) {
     const base =
-      "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed select-none";
+      "inline-flex items-center justify-center gap-2 rounded-sm font-semibold tracking-[0.08em] uppercase transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed select-none";
 
     const sizes = {
       md: "px-5 py-2.5 text-sm sm:text-base",
-      lg: "px-7 py-3.5 text-base sm:text-lg",
+      lg: "px-7 py-3.5 text-sm sm:text-base",
     };
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-rose-500 to-rose-400 text-white shadow-soft hover:shadow-lg hover:from-rose-600 hover:to-rose-500",
+        "bg-rose-900 text-cream-50 border border-rose-900 shadow-soft hover:bg-rose-700 hover:border-rose-700",
       secondary:
-        "bg-white text-rose-700 border border-rose-200 hover:border-rose-300 hover:bg-rose-50",
+        "bg-transparent text-rose-900 border border-rose-300 hover:border-rose-700 hover:bg-rose-50",
       ghost:
-        "bg-transparent text-rose-700 hover:bg-rose-50/60",
+        "bg-transparent text-rose-800 hover:bg-rose-100/70",
     };
 
     return (
