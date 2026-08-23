@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -123,48 +123,28 @@ export function TimeSelector({ selected, onSelect }: Props) {
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <ClockStepper
+                <ScrollWheel
                   label="Hour"
                   value={String(customHour).padStart(2, "0")}
-                  onIncrease={() =>
-                    setCustomHour((hour) => (hour === 12 ? 1 : hour + 1))
-                  }
-                  onDecrease={() =>
-                    setCustomHour((hour) => (hour === 1 ? 12 : hour - 1))
-                  }
+                  options={Array.from({ length: 12 }, (_, idx) =>
+                    String(idx + 1).padStart(2, "0"),
+                  )}
+                  onChange={(value) => setCustomHour(Number(value))}
                 />
-                <ClockStepper
+                <ScrollWheel
                   label="Minute"
                   value={String(customMinute).padStart(2, "0")}
-                  onIncrease={() =>
-                    setCustomMinute((minute) => (minute + 5) % 60)
-                  }
-                  onDecrease={() =>
-                    setCustomMinute((minute) => (minute === 0 ? 55 : minute - 5))
-                  }
+                  options={Array.from({ length: 12 }, (_, idx) =>
+                    String(idx * 5).padStart(2, "0"),
+                  )}
+                  onChange={(value) => setCustomMinute(Number(value))}
                 />
-                <div>
-                  <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-rose-700/60">
-                    Period
-                  </div>
-                  <div className="grid gap-1 rounded-sm border border-rose-200 bg-cream-50 p-1">
-                    {(["PM", "AM"] as const).map((period) => (
-                      <button
-                        key={period}
-                        type="button"
-                        onClick={() => setCustomPeriod(period)}
-                        className={cn(
-                          "rounded-sm px-2 py-2 text-sm font-semibold transition",
-                          customPeriod === period
-                            ? "bg-rose-900 text-cream-50"
-                            : "text-rose-900 hover:bg-rose-100",
-                        )}
-                      >
-                        {period}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <ScrollWheel
+                  label="Period"
+                  value={customPeriod}
+                  options={["PM", "AM"]}
+                  onChange={(value) => setCustomPeriod(value as "PM" | "AM")}
+                />
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -182,7 +162,7 @@ export function TimeSelector({ selected, onSelect }: Props) {
               </div>
             </div>
             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-rose-700/55">
-              Digital-style custom clock
+              Scroll the wheels or tap a value
             </p>
           </Card>
         )}
@@ -191,42 +171,75 @@ export function TimeSelector({ selected, onSelect }: Props) {
   );
 }
 
-function ClockStepper({
+function ScrollWheel({
   label,
   value,
-  onIncrease,
-  onDecrease,
+  options,
+  onChange,
 }: {
   label: string;
   value: string;
-  onIncrease: () => void;
-  onDecrease: () => void;
+  options: string[];
+  onChange: (value: string) => void;
 }) {
+  const itemHeight = 44;
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+    scrollTimeout.current = setTimeout(() => {
+      const index = Math.max(
+        0,
+        Math.min(options.length - 1, Math.round(target.scrollTop / itemHeight)),
+      );
+      onChange(options[index]);
+    }, 80);
+  };
+
   return (
     <div>
       <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-rose-700/60">
         {label}
       </div>
-      <div className="grid gap-1 rounded-sm border border-rose-200 bg-cream-50 p-1">
-        <button
-          type="button"
-          onClick={onIncrease}
-          className="rounded-sm px-2 py-1 text-rose-900 hover:bg-rose-100"
-          aria-label={`Increase ${label.toLowerCase()}`}
+      <div className="relative h-40 overflow-hidden rounded-sm border border-rose-200 bg-cream-50">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-gradient-to-b from-cream-50 to-cream-50/0"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-gradient-to-t from-cream-50 to-cream-50/0"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-2 top-1/2 z-10 h-10 -translate-y-1/2 rounded-sm border-y border-rose-300/80 bg-rose-50/65"
+          aria-hidden
+        />
+        <div
+          className="relative z-20 h-full snap-y snap-mandatory overflow-y-auto px-1 py-[60px]"
+          onScroll={handleScroll}
         >
-          +
-        </button>
-        <div className="rounded-sm bg-rose-50 px-2 py-2 text-center font-mono text-xl font-bold text-rose-900">
-          {value}
+          {options.map((option) => {
+            const active = value === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => onChange(option)}
+                className={cn(
+                  "mb-1 grid h-10 w-full snap-center place-items-center rounded-sm font-mono text-lg font-bold transition",
+                  active
+                    ? "bg-rose-900 text-cream-50 shadow-soft"
+                    : "text-rose-900/55 hover:bg-rose-100 hover:text-rose-900",
+                )}
+              >
+                {option}
+              </button>
+            );
+          })}
         </div>
-        <button
-          type="button"
-          onClick={onDecrease}
-          className="rounded-sm px-2 py-1 text-rose-900 hover:bg-rose-100"
-          aria-label={`Decrease ${label.toLowerCase()}`}
-        >
-          -
-        </button>
       </div>
     </div>
   );
