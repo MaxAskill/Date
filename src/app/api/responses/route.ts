@@ -84,3 +84,61 @@ export async function POST(req: NextRequest) {
     { headers: noStoreHeaders },
   );
 }
+
+export async function DELETE(req: NextRequest) {
+  const password = req.headers.get("x-dashboard-password") || "";
+  const expected = process.env.DASHBOARD_PASSWORD || "";
+
+  if (!expected) {
+    return NextResponse.json(
+      { error: "DASHBOARD_PASSWORD is not configured on the server." },
+      { status: 500, headers: noStoreHeaders },
+    );
+  }
+  if (password !== expected) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: noStoreHeaders },
+    );
+  }
+
+  let body: { id?: string };
+  try {
+    body = (await req.json()) as { id?: string };
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON" },
+      { status: 400, headers: noStoreHeaders },
+    );
+  }
+
+  const id = (body.id || "").toString().trim();
+  if (!id) {
+    return NextResponse.json(
+      { error: "Missing response id" },
+      { status: 400, headers: noStoreHeaders },
+    );
+  }
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json(
+      { ok: true, deleted: false, configured: false },
+      { headers: noStoreHeaders },
+    );
+  }
+
+  const admin = getSupabaseAdmin()!;
+  const { error } = await admin.from("date_responses").delete().eq("id", id);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Could not delete response", detail: error.message },
+      { status: 500, headers: noStoreHeaders },
+    );
+  }
+
+  return NextResponse.json(
+    { ok: true, deleted: true },
+    { headers: noStoreHeaders },
+  );
+}

@@ -27,6 +27,7 @@ export function CreatorDashboard() {
   const [authenticated, setAuthenticated] = useState(false);
   const [slug, setSlug] = useState(DEFAULT_INVITE_SLUG);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +95,39 @@ export function CreatorDashboard() {
   const handleLoad = async (e: React.FormEvent) => {
     e.preventDefault();
     await loadResponses(slug);
+  };
+
+  const handleDelete = async (response: Response) => {
+    const confirmed = window.confirm(
+      "Delete this response from the dashboard? This cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    setError(null);
+    setDeletingId(response.id);
+    try {
+      const res = await fetch("/api/responses", {
+        method: "DELETE",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "x-dashboard-password": password,
+        },
+        body: JSON.stringify({ id: response.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.error || "Could not delete response.");
+        return;
+      }
+
+      setResponses((current) => current.filter((r) => r.id !== response.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (!authenticated) {
@@ -219,7 +253,12 @@ export function CreatorDashboard() {
 
         <div className="mt-6 space-y-4">
           {responses.map((r) => (
-            <ResponseCard key={r.id} response={r} />
+            <ResponseCard
+              key={r.id}
+              response={r}
+              isDeleting={deletingId === r.id}
+              onDelete={() => handleDelete(r)}
+            />
           ))}
         </div>
       </div>
@@ -227,7 +266,15 @@ export function CreatorDashboard() {
   );
 }
 
-function ResponseCard({ response: r }: { response: Response }) {
+function ResponseCard({
+  response: r,
+  isDeleting,
+  onDelete,
+}: {
+  response: Response;
+  isDeleting: boolean;
+  onDelete: () => void;
+}) {
   const isAccepted = r.status === "accepted";
   const statusColor = isAccepted
     ? "bg-rose-500"
@@ -289,6 +336,18 @@ function ResponseCard({ response: r }: { response: Response }) {
             </p>
           </div>
         )}
+
+        <div className="mt-5 flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isDeleting}
+            onClick={onDelete}
+            className="text-rose-700 hover:bg-rose-100"
+          >
+            {isDeleting ? "Deleting…" : "Delete response"}
+          </Button>
+        </div>
       </Card>
     </motion.div>
   );
