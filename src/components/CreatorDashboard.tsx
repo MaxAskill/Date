@@ -39,7 +39,10 @@ export function CreatorDashboard() {
       // We probe a lookup with a fake slug to validate the password
       const res = await fetch(
         `/api/responses/lookup?slug=__probe__`,
-        { headers: { "x-dashboard-password": password } },
+        {
+          cache: "no-store",
+          headers: { "x-dashboard-password": password },
+        },
       );
       if (res.status === 401) {
         setError("That password didn't work. Try again?");
@@ -67,8 +70,11 @@ export function CreatorDashboard() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/responses/lookup?slug=${encodeURIComponent(inviteSlug.trim())}`,
-        { headers: { "x-dashboard-password": dashboardPassword } },
+        `/api/responses/lookup?slug=${encodeURIComponent(inviteSlug.trim())}&t=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: { "x-dashboard-password": dashboardPassword },
+        },
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -153,6 +159,14 @@ export function CreatorDashboard() {
           />
           <Button type="submit" disabled={!slug.trim() || loading}>
             {loading ? "Loading…" : "Look up"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!slug.trim() || loading}
+            onClick={() => loadResponses(slug)}
+          >
+            Refresh
           </Button>
         </form>
 

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noStoreHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 /**
  * Lookup the latest response for a given invite slug. Requires the
@@ -16,16 +23,22 @@ export async function GET(req: NextRequest) {
   if (!expected) {
     return NextResponse.json(
       { error: "DASHBOARD_PASSWORD is not configured on the server." },
-      { status: 500 },
+      { status: 500, headers: noStoreHeaders },
     );
   }
   if (password !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: noStoreHeaders },
+    );
   }
 
   const slug = req.nextUrl.searchParams.get("slug") || "";
   if (!slug) {
-    return NextResponse.json({ error: "Missing slug" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing slug" },
+      { status: 400, headers: noStoreHeaders },
+    );
   }
 
   if (!isSupabaseConfigured()) {
@@ -33,7 +46,7 @@ export async function GET(req: NextRequest) {
       ok: true,
       configured: false,
       responses: [],
-    });
+    }, { headers: noStoreHeaders });
   }
 
   const admin = getSupabaseAdmin()!;
@@ -47,9 +60,12 @@ export async function GET(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { error: "Could not load responses", detail: error.message },
-      { status: 500 },
+      { status: 500, headers: noStoreHeaders },
     );
   }
 
-  return NextResponse.json({ ok: true, configured: true, responses: data });
+  return NextResponse.json(
+    { ok: true, configured: true, responses: data },
+    { headers: noStoreHeaders },
+  );
 }

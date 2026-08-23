@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noStoreHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 type IncomingPayload = {
   invite_slug?: string;
@@ -22,14 +29,17 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as IncomingPayload;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid JSON" },
+      { status: 400, headers: noStoreHeaders },
+    );
   }
 
   const inviteSlug = (body.invite_slug || "").toString().trim();
   if (!inviteSlug) {
     return NextResponse.json(
       { error: "Missing invite_slug" },
-      { status: 400 },
+      { status: 400, headers: noStoreHeaders },
     );
   }
 
@@ -42,7 +52,10 @@ export async function POST(req: NextRequest) {
       invite_slug: inviteSlug,
       ...body,
     });
-    return NextResponse.json({ ok: true, stored: false });
+    return NextResponse.json(
+      { ok: true, stored: false },
+      { headers: noStoreHeaders },
+    );
   }
 
   const admin = getSupabaseAdmin()!;
@@ -62,9 +75,12 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { error: "Could not save response", detail: error.message },
-      { status: 500 },
+      { status: 500, headers: noStoreHeaders },
     );
   }
 
-  return NextResponse.json({ ok: true, stored: true });
+  return NextResponse.json(
+    { ok: true, stored: true },
+    { headers: noStoreHeaders },
+  );
 }
