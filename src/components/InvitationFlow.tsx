@@ -327,7 +327,7 @@ export function InvitationFlow({
 }
 
 function Section({ children }: { children: React.ReactNode }) {
-  return <div className="py-4 sm:py-6">{children}</div>;
+  return <div className="py-4 pb-28 sm:py-6">{children}</div>;
 }
 
 function Footer({
@@ -340,14 +340,33 @@ function Footer({
   canContinue?: boolean;
 }) {
   return (
-    <div className="mt-10 flex flex-col-reverse sm:flex-row sm:justify-between gap-3 sm:items-center">
-      <Button variant="ghost" onClick={onBack}>
-        ← Back
-      </Button>
-      <Button onClick={onNext} disabled={!canContinue}>
-        Continue →
-      </Button>
-    </div>
+    <>
+      <div className="mt-10 hidden sm:flex sm:justify-between gap-3 sm:items-center">
+        <Button variant="ghost" onClick={onBack}>
+          ← Back
+        </Button>
+        <Button onClick={onNext} disabled={!canContinue}>
+          Continue →
+        </Button>
+      </div>
+
+      <div
+        className={`sm:hidden fixed inset-x-0 bottom-0 z-40 px-4 pb-4 pt-8 bg-gradient-to-t from-cream-50 via-cream-50/95 to-transparent transition-all duration-300 ${
+          canContinue
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-4 opacity-0"
+        }`}
+      >
+        <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-2xl border border-rose-100 bg-white/90 p-2 shadow-soft backdrop-blur">
+          <Button variant="ghost" onClick={onBack} className="shrink-0">
+            ← Back
+          </Button>
+          <Button onClick={onNext} className="flex-1">
+            Continue →
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }
 
