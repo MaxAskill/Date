@@ -20,10 +20,12 @@ type Response = {
   created_at: string;
 };
 
+const DEFAULT_INVITE_SLUG = "beverly-pastrana";
+
 export function CreatorDashboard() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [slug, setSlug] = useState("");
+  const [slug, setSlug] = useState(DEFAULT_INVITE_SLUG);
   const [loading, setLoading] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
@@ -51,6 +53,7 @@ export function CreatorDashboard() {
       setAuthenticated(true);
       const data = await res.json();
       setConfigured(data.configured);
+      await loadResponses(DEFAULT_INVITE_SLUG, password);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -58,15 +61,14 @@ export function CreatorDashboard() {
     }
   };
 
-  const handleLoad = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!slug.trim()) return;
+  const loadResponses = async (inviteSlug: string, dashboardPassword = password) => {
+    if (!inviteSlug.trim()) return;
     setError(null);
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/responses/lookup?slug=${encodeURIComponent(slug.trim())}`,
-        { headers: { "x-dashboard-password": password } },
+        `/api/responses/lookup?slug=${encodeURIComponent(inviteSlug.trim())}`,
+        { headers: { "x-dashboard-password": dashboardPassword } },
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -81,6 +83,11 @@ export function CreatorDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLoad = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await loadResponses(slug);
   };
 
   if (!authenticated) {
@@ -141,7 +148,7 @@ export function CreatorDashboard() {
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
-            placeholder="invite slug (e.g. her)"
+            placeholder="invite slug (e.g. beverly-pastrana)"
             className="flex-1 rounded-full border border-rose-200 px-4 py-2.5 text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white"
           />
           <Button type="submit" disabled={!slug.trim() || loading}>
@@ -293,6 +300,15 @@ function prettyActivity(id: string): string {
     arcade: "Arcade",
     walk: "Night walk",
     drinks: "Drinks",
+    "capitol-commons": "Capitol Commons",
+    "podium-dessert": "Podium dessert",
+    "estancia-coffee": "Estancia coffee",
+    "greenfield-walk": "Greenfield stroll",
+    "airbnb-ortigas": "Ortigas staycation",
+    "airbnb-megamall": "Near Megamall stay",
+    "airbnb-estancia": "Estancia weekend",
+    "outside-date": "Just outside",
+    "you-choose": "You choose",
     later: "Let's decide later",
   };
   return map[id] || id;
